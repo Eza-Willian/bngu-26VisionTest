@@ -49,6 +49,8 @@ int main(){
     << "| Operation time" << std::fixed << std::setprecision(2) << tm.getTimeSec() << "s"
     << std::flush;
 
+    ++frameCount;
+
     while(true){
         tm.reset();
         tm.start();
