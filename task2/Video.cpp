@@ -55,7 +55,7 @@ int main(){
         tm.reset();
         tm.start();
         if(!cap.read(frame)){
-            std::cout << "Stream ended." << std::endl;
+            std::cout << "\nStream ended." << std::endl;
             break;
         }
         if(frame.empty()) continue;
