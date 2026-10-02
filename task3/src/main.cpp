@@ -9,6 +9,7 @@ int main(){
     cv::Mat img, gr, hsv, binary, k1, temp, mask, dst;
     std::vector<std::vector<cv::Point>> contours; 
     cv::Rect r;
+    int x, y;
 
     if(!std::getline(std::cin, path)) return 0;
     if(path.empty()){
@@ -42,10 +43,17 @@ int main(){
         if(cv::contourArea(contours[i]) < 100) continue;
         r = cv::boundingRect(contours[i]);
         cv::rectangle(dst, r, cv::Scalar(255, 255, 0), 4);
+        x = r.x + r.width / 2;
+        y = r.y + r.height / 2;
+        cv::arrowedLine(dst, cv::Point(x, y), cv::Point(x + 50, y), cv::Scalar(255, 0, 255), 2, cv::LINE_8, 0, 0.2);
+        cv::arrowedLine(dst, cv::Point(x, y), cv::Point(x, y + 50), cv::Scalar(255, 0, 255), 2, cv::LINE_8, 0, 0.2);
+
     }
     cv::drawContours(dst, contours, -1, cv::Scalar(0, 255, 255), 3);
-
     cv::imshow("dst", dst);
+
+
+
     cv::waitKey(0);
     cv::destroyAllWindows();
     return 0;
