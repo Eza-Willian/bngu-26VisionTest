@@ -11,8 +11,7 @@ int main(){
     cv::Rect r;
     int x, y;
 
-    if(!std::getline(std::cin, path)) return 0;
-    if(path.empty()){
+    if(!std::getline(std::cin, path) || path.empty()){
         std::cerr << "Path error!" << std::endl;
         return 0;
     }
