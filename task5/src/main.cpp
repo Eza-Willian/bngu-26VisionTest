@@ -1,6 +1,7 @@
 #include  <iostream>
 #include <string>
 #include <vector>
+#include <iomanip>
 #include <opencv2/opencv.hpp>
 
 int main(){
@@ -61,8 +62,9 @@ int main(){
         }else continue;
 
         valid++;
-        std::cout << "shape: " << shape << 
-        " | center: " << "(" << cx << "," << cy << ")" << std::endl;
+        std::cout << "shape: " << std::setw(10) << shape << 
+        " | center: " << "(" << std::fixed << std::setprecision(2) << cx << "," <<
+        std :: fixed << std::setprecision(2) << cy << ")" << std::endl;
     }
 
     if(valid == 0){
