@@ -136,6 +136,8 @@ int main(){
         << std::fixed << std::setprecision(4) << preViewErr[i] << " pixel" << std::endl;
     }
 
+    std::cout << "Error is " << meanErr << std::endl;
+
     if(meanErr < 0.5){
         std::cout << "[comment] A (Error < 0.5)" << std::endl;
     }else if(meanErr <= 1.0){
