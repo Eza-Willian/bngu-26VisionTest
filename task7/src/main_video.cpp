@@ -10,14 +10,14 @@
 #include <algorithm>
 #include <opencv2/opencv.hpp>
 
-const int boardRows = 6;
-const int boardCols = 9;
-const float squareSize = 10.0f;
+const int boardRows = 7;
+const int boardCols = 8;
+const float squareSize = 1.0f;
 cv::Size patternSize(boardCols, boardRows);
 int main(){
     
     std::cout << "calibration board size is " << boardCols << "x" 
-    << boardRows << " points, square size is " << squareSize << "cm." << std::endl;
+    << boardRows << " points, square size is " << squareSize << "mm." << std::endl;
 
     std::string video;
     std::cout << "Please input your calibration video path: " << std::flush;
@@ -52,7 +52,10 @@ int main(){
     imageSize = frame.size();
 
     while(1){
-        
+        if(!cap.read(frame)){
+            std::cout << "Video stream is over!" << std::endl;
+            break;
+        }
         cv::Mat gr;
         cv::cvtColor(frame, gr, cv::COLOR_BGR2GRAY);
 
@@ -69,10 +72,10 @@ int main(){
             successPic++;
             
             cv::drawChessboardCorners(frame, patternSize, corners, found);
-            cv::imshow("corners", frame);
-            cv::waitKey(30);
-        }
 
+        }
+        cv::imshow("corners", frame);
+        if(cv::waitKey(30) == 27) break;
     }
 
     cv::Mat cameraMatrix = cv::Mat::eye(3, 3, CV_64F);
