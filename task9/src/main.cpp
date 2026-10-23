@@ -87,12 +87,11 @@ int main(){
     cv::Point2f rotateCenter = minRect.center;
     double dx = arrowTip.x - rotateCenter.x;
     double dy = arrowTip.y - rotateCenter.y;
-    double angle_rad = std::atan2(dy, dx);
+    double angle_rad = std::atan2(-dx, -dy);
     double angle_deg = angle_rad * 180.0 / CV_PI;
     while(angle_deg < 0){
         angle_deg += 360.0;
     }
-    angle_deg -= 90.0;
 
    std::cout << "Rotate center is ( " << rotateCenter.x << " , " << rotateCenter.y << " )\n"
              << "Arrow Tip is ( " << arrowTip.x << " , " << arrowTip.y << " )\n" 

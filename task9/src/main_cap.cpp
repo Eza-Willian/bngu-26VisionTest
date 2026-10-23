@@ -76,12 +76,11 @@ int operation(cv::Mat& frame){
     cv::Point2f rotateCenter = minRect.center;
     double dx = arrowTip.x - rotateCenter.x;
     double dy = arrowTip.y - rotateCenter.y;
-    double angle_rad = std::atan2(dy, dx);
+    double angle_rad = std::atan2(-dx, -dy);
     double angle_deg = angle_rad * 180.0 / CV_PI;
     while(angle_deg < 0){
         angle_deg += 360.0;
     }
-    angle_deg -= 90.0;
 
     std::string text1 = "Rotate center: ( " + std::to_string(rotateCenter.x) + " , " + std::to_string(rotateCenter.y) + " )";
     std::string text2 = "Arrow Tip: ( " + std::to_string(arrowTip.x) + " , " + std::to_string(arrowTip.y) + " )\n" ;
