@@ -22,40 +22,25 @@ int operation(cv::Mat& frame, const cv::Mat& cameraMatrix, const cv::Mat& distCo
                     cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255), 2);
         return 0;
     }else{
-        bool isComplete = true;
-        for(const auto& c : corners){
-            for(const auto& pt : c){
+        cv::aruco::drawDetectedMarkers(frame, corners, ids);
+        for(size_t i = 0; i < ids.size(); ++i){
+            bool isComplete = true;
+            for(const auto& pt : corners[i]){
                 if(pt.x <= 0 || pt.y <= 0 || pt.x >= frame.cols || pt.y >= frame.rows){
                     isComplete = false;
-                    return 0;
+                    break;
                 }
             }
-            if(!isComplete) return 0;
-        }
-        cv::aruco::drawDetectedMarkers(frame, corners, ids);
-
-        if(isComplete){
-            std::cout << "Board is visible." << std::endl;
-
-            double maxArea = 0;
-            int bestId = 0;
-
-            for(size_t i = 0; i < corners.size(); ++i){
-                double area = cv::contourArea(corners[i]);
-                if(area > maxArea){
-                    maxArea = area;
-                    bestId = (int)i;
-                }
-            }
-
+            if(!isComplete) continue;
+    
             cv::Mat rvec, tvec;
-            cv::solvePnP(singleTagObject, corners[bestId], cameraMatrix, distCoeffs, rvec, tvec, false, cv::SOLVEPNP_ITERATIVE);
-            cv::drawFrameAxes(frame, cameraMatrix, distCoeffs, rvec, tvec, tagSize * 1.0f);
+            cv::solvePnP(singleTagObject, corners[i], cameraMatrix, distCoeffs, rvec, tvec, false, cv::SOLVEPNP_ITERATIVE);
+            cv::drawFrameAxes(frame, cameraMatrix, distCoeffs, rvec, tvec, tagSize * 0.8f);
             
             cv::Mat R;
             cv::Rodrigues(rvec, R);
             double sy = std::sqrt(R.at<double>(0, 0) * R.at<double>(0, 0) + 
-            R.at<double>(0, 1) * R.at<double>(0, 1));
+            R.at<double>(1, 0) * R.at<double>(1, 0));
             bool singular = sy < 1e-6;
             double roll, pitch,yaw;
 
@@ -78,23 +63,21 @@ int operation(cv::Mat& frame, const cv::Mat& cameraMatrix, const cv::Mat& distCo
 
             cv::circle(frame, projectedPoints[0], 3, cv::Scalar(0, 0, 255), -1);
             std::string text = "Yaw: " + std::to_string((int)(yaw * RAD2DEG));
-            cv::putText(frame, text, cv::Point(20, 40), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 255, 0), 2);
+            cv::putText(frame, text, cv::Point(corners[i][0].x, corners[i][0].y - 10),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 255, 0), 2);
 
             double totalErr = 0.0;
-            for(size_t i = 0; i < 4; ++i){
-                totalErr += cv::norm(corners[bestId][i] - projectedPoints[i]);
+            for(size_t j = 0; j < 4; ++j){
+                totalErr += cv::norm(corners[i][j] - projectedPoints[j]);
             }
             double meanReproErr = totalErr / 4.0;
             float pixelWidth = (tagSize * cameraMatrix.at<double>(0, 0)) / targetInCamera.at<double>(2);
             float errorThreshold = pixelWidth * 0.05;
 
-            std::cout << "Reproject Error: " << std::fixed << std::setprecision(2) << meanReproErr 
-                      << " (error threshold: " << std::fixed << std::setprecision(2) <<  errorThreshold << " )" << std::endl;
-            if(meanReproErr < errorThreshold){
-                std::cout << "The error is under 5%" << std::endl;
-            } 
-        }else{
-            std::cout << "\r" << "Board is not complete!" << std::flush;
+            if(meanReproErr > errorThreshold){
+            cv::putText(frame, "Error High", cv::Point(corners[i][0].x, corners[i][0].y + 20), 
+                        cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+            }
         }
     }
     return 0;

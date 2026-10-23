@@ -54,40 +54,25 @@ int main(){
     if(ids.empty()){
         std::cout << "No detect tag" << std::endl;
     }else{
-        bool isComplete = true;
-        for(const auto& c : corners){
-            for(const auto& pt : c){
+        cv::aruco::drawDetectedMarkers(output, corners, ids);
+        for(size_t i = 0; i < ids.size(); ++i){
+            bool isComplete = true;
+            for(const auto& pt : corners[i]){
                 if(pt.x <= 0 || pt.y <= 0 || pt.x >= src.cols || pt.y >= src.rows){
                     isComplete = false;
                     break;
                 }
             }
-            if(!isComplete) break;
-        }
-        cv::aruco::drawDetectedMarkers(output, corners, ids);
-
-        if(isComplete){
-            std::cout << "Board is visible." << std::endl;
-
-            double maxArea = 0;
-            int bestId = 0;
-
-            for(size_t i = 0; i < corners.size(); ++i){
-                double area = cv::contourArea(corners[i]);
-                if(area > maxArea){
-                    maxArea = area;
-                    bestId = (int)i;
-                }
-            }
+            if(!isComplete) continue;
 
             cv::Mat rvec, tvec;
-            cv::solvePnP(singleTagObject, corners[bestId], cameraMatrix, distCoeffs, rvec, tvec, false, cv::SOLVEPNP_ITERATIVE);
+            cv::solvePnP(singleTagObject, corners[i], cameraMatrix, distCoeffs, rvec, tvec, false, cv::SOLVEPNP_ITERATIVE);
             cv::drawFrameAxes(output, cameraMatrix, distCoeffs, rvec, tvec, tagSize * 1.0f);
             
             cv::Mat R;
             cv::Rodrigues(rvec, R);
             double sy = std::sqrt(R.at<double>(0, 0) * R.at<double>(0, 0) + 
-            R.at<double>(0, 1) * R.at<double>(0, 1));
+            R.at<double>(1, 0) * R.at<double>(1, 0));
             bool singular = sy < 1e-6;
             double roll, pitch,yaw;
 
@@ -117,8 +102,8 @@ int main(){
             cv::projectPoints(singleTagObject, rvec, tvec, cameraMatrix, distCoeffs, projectedPoints);
 
             double totalErr = 0.0;
-            for(size_t i = 0; i < 4; ++i){
-                totalErr += cv::norm(corners[bestId][i] - projectedPoints[i]);
+            for(size_t j = 0; j < 4; ++j){
+                totalErr += cv::norm(corners[i][j] - projectedPoints[j]);
             }
             double meanReproErr = totalErr / 4.0;
             float pixelWidth = (tagSize * cameraMatrix.at<double>(0, 0)) / targetInCamera.at<double>(2);
@@ -129,9 +114,10 @@ int main(){
             if(meanReproErr < errorThreshold){
                 std::cout << "The error is under 5%" << std::endl;
             } 
-        }else{
-            std::cout << "Board is not complete!" << std::endl;
-
+            
+            cv::putText(output, "ID: " + std::to_string(ids[i]), 
+                        cv::Point(corners[i][0].x, corners[i][0].y - 10), 
+                        cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 255, 0), 2);
         }
     }
     
