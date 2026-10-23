@@ -1,0 +1,7 @@
+device: "/dev/ttyUSB0"   # Linux 上通常是 /dev/ttyUSB0 或 /dev/ttyACM0
+baud: 115200
+period_ms: 30
+protocol: "text"        # text | raw_float | vofa_justfloat | vofa_firewater | raw13
+text_format: "%.0f"     # 现场实测：固件只认整数，带小数不动！
+stop_value: 999.0       # hasAngle=0 时发这个值，电控必须识别它停车
+justfloat_fields: "angle"
